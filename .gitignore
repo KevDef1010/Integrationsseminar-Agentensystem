@@ -23,11 +23,11 @@ build/
 .DS_Store
 Thumbs.db
 
-# Ollama Installer
-OllamaSetup.exe
-
-# CrewAI Output (generierte Dateien)
+# CrewAI Output (alter Ordner)
 output/
+
+# Projekte Ordner (generierte Dateien)
+projekte/
 
 # Logs
 *.log

@@ -81,110 +81,116 @@ technical_writer = Agent(
     verbose=True
 )
 
+# Agent 5: 2. developer
+developer2 = Agent(
+    role="Senior Python Developer",
+    goal="Komplexe Softwarearchitekturen entwerfen und implementieren",
+    backstory="""Du bist ein erfahrener Senior Python Developer mit umfangreicher 
+    Erfahrung in der Entwicklung von skalierbaren Anwendungen. Du arbeitest eng 
+    mit dem Product Owner zusammen, um technische Lösungen zu entwerfen und 
+    umzusetzen.""",
+    llm=developer_llm,
+    verbose=True
+)
+
 # Task 1: Anforderungen definieren
 define_requirements = Task(
-    description="""Erstelle eine detaillierte User Story für ein Task-Management-System (To-Do App).
+    description="""Erstelle eine detaillierte Spezifikation für ein einfaches Snake-Spiel mit GUI.
     
-    Das System soll folgende Features haben:
-    - Tasks erstellen, bearbeiten, löschen
-    - Tasks mit Priorität (hoch/mittel/niedrig) versehen
-    - Tasks mit Deadline versehen
-    - Tasks als erledigt markieren
-    - Tasks nach Priorität oder Deadline sortieren
-    - Tasks in Kategorien organisieren
+    Das Spiel soll folgende Features haben:
+    - Snake die sich mit Pfeiltasten steuern lässt
+    - Essen das zufällig erscheint
+    - Snake wächst wenn sie Essen frisst
+    - Punktestand der angezeigt wird
+    - Game Over wenn Snake sich selbst oder die Wand trifft
+    - Neustart-Möglichkeit
     
     Definiere:
-    - User Stories im Format "Als... möchte ich... damit..."
-    - Mindestens 5 Akzeptanzkriterien
-    - Datenstruktur für Tasks
-    - Welche Methoden die API haben soll""",
-    expected_output="Detaillierte User Stories mit Akzeptanzkriterien und API-Spezifikation",
+    - Spielmechanik und Regeln
+    - Welche Klassen gebraucht werden (Snake, Food, Game)
+    - Welche Bibliothek für die GUI (tkinter - ist bei Python dabei!)
+    - Tastatursteuerung""",
+    expected_output="Detaillierte Spielspezifikation mit Klassen und Mechanik",
     agent=product_owner
 )
 
 # Task 2: Code implementieren
 implement_code = Task(
     description="""Basierend auf den Anforderungen des Product Owners, 
-    implementiere ein vollständiges Task-Management-System in Python.
+    implementiere ein vollständiges Snake-Spiel in Python mit tkinter GUI.
     
     WICHTIG: Schreibe ECHTEN, AUSFÜHRBAREN Python-Code!
     
     Der Code MUSS enthalten:
-    1. Eine Task-Klasse mit:
-       - id, title, description, priority, deadline, completed, category
-       - __init__, __str__, to_dict Methoden
+    1. Imports: nur tkinter und random (sind bei Python dabei!)
     
-    2. Eine TaskManager-Klasse mit:
-       - add_task(title, priority, deadline, category)
-       - get_task(task_id)
-       - update_task(task_id, **kwargs)
-       - delete_task(task_id)
-       - complete_task(task_id)
-       - get_all_tasks()
-       - get_tasks_by_priority(priority)
-       - get_tasks_by_category(category)
-       - sort_by_priority()
-       - sort_by_deadline()
+    2. Eine Game-Klasse mit:
+       - Canvas für das Spielfeld
+       - Snake als Liste von Koordinaten
+       - Food Position
+       - Score Anzeige
+       - Game Loop mit after()
     
-    3. Fehlerbehandlung für ungültige Eingaben
+    3. Steuerung:
+       - Pfeiltasten für Richtungswechsel
+       - Leertaste oder Button für Neustart
     
-    4. Am Ende: Beispielcode der zeigt wie man das System verwendet
+    4. Spiellogik:
+       - Kollisionserkennung (Wand und Selbst)
+       - Essen einsammeln und wachsen
+       - Score erhöhen
     
-    Gib den KOMPLETTEN Python-Code aus, nicht nur eine Beschreibung!""",
-    expected_output="Vollständiger, ausführbarer Python-Code mit allen Klassen und Beispielnutzung",
+    5. Am Ende: if __name__ == "__main__": um das Spiel zu starten
+    
+    Gib den KOMPLETTEN, AUSFÜHRBAREN Python-Code aus!
+    Das Spiel muss mit "python spiel.py" direkt starten!""",
+    expected_output="Vollständiger, ausführbarer Python-Code für Snake-Spiel mit tkinter",
     agent=developer,
     context=[define_requirements]
 )
 
 # Task 3: Code Review und Abnahme
 review_code = Task(
-    description="""Prüfe den vom Developer erstellten Code gründlich:
+    description="""Prüfe den vom Developer erstellten Snake-Spiel Code gründlich:
     
-    1. **Funktionalität**: Erfüllt der Code alle Anforderungen des Product Owners?
-    2. **Fehlerbehandlung**: Werden alle Edge Cases abgedeckt?
-       - Ungültige Prioritäten
-       - Leere Task-Titel
-       - Deadlines in der Vergangenheit
-       - Nicht existierende Task-IDs
+    1. **Funktionalität**: Läuft das Spiel? Funktioniert die Steuerung?
+    2. **Fehlerbehandlung**: 
+       - Was passiert bei Game Over?
+       - Kann man neu starten?
     3. **Code-Qualität**: 
        - Ist der Code sauber und lesbar?
-       - Werden Best Practices befolgt?
-       - Sind Type Hints korrekt?
-    4. **Dokumentation**: Sind alle Klassen und Methoden dokumentiert?
-    5. **Bugs**: Gibt es offensichtliche Fehler oder Probleme?
+       - Sind die Klassen sinnvoll strukturiert?
+    4. **Spielbarkeit**: Macht das Spiel Spass?
+    5. **Bugs**: Gibt es offensichtliche Fehler?
     
-    Erstelle einen detaillierten QA-Bericht mit:
-    - Liste aller gefundenen Probleme mit Schweregrad (kritisch/mittel/niedrig)
-    - Konkrete Verbesserungsvorschläge mit Code-Beispielen
-    - Finale Abnahme-Entscheidung (APPROVED / REJECTED mit Begründung)""",
-    expected_output="Detaillierter QA-Bericht mit Problembeschreibungen und Abnahme-Entscheidung",
+    Erstelle einen QA-Bericht mit:
+    - Gefundene Probleme
+    - Verbesserungsvorschläge
+    - Finale Abnahme-Entscheidung (APPROVED / REJECTED)""",
+    expected_output="QA-Bericht mit Abnahme-Entscheidung",
     agent=qa_engineer,
     context=[define_requirements, implement_code]
 )
 
 # Task 4: Dokumentation erstellen
 write_documentation = Task(
-    description="""Erstelle eine vollständige technische Dokumentation für das Task-Management-System.
+    description="""Erstelle eine Anleitung für das Snake-Spiel.
     
     Die Dokumentation soll enthalten:
     
-    1. **Projektübersicht**
-       - Was macht das System?
-       - Hauptfeatures
+    1. **Spielbeschreibung**
+       - Was ist das Ziel?
+       - Wie gewinnt/verliert man?
     
-    2. **Installation**
-       - Voraussetzungen
-       - Installationsschritte
+    2. **Steuerung**
+       - Welche Tasten werden verwendet?
     
-    3. **API-Dokumentation**
-       - Alle Klassen mit ihren Attributen
-       - Alle Methoden mit Parametern und Rückgabewerten
-       - Exceptions die geworfen werden können
+    3. **Installation**
+       - Wie startet man das Spiel?
     
-    4. **Anwendungsbeispiele**
-       - Task erstellen
-       - Tasks filtern und sortieren
-       - Tasks verwalten
+    4. **Code-Übersicht**
+       - Welche Klassen gibt es?
+       - Was machen sie?
     
     5. **Best Practices**
        - Tipps zur Verwendung
@@ -204,13 +210,26 @@ crew = Crew(
 
 if __name__ == "__main__":
     import os
+    import sys
     
-    # Output-Ordner erstellen falls nicht vorhanden
-    OUTPUT_DIR = "output"
+    # Projektname abfragen oder als Argument uebergeben
+    if len(sys.argv) > 1:
+        projekt_name = sys.argv[1]
+    else:
+        print("=" * 60)
+        print("📁 PROJEKT-SETUP")
+        print("=" * 60)
+        projekt_name = input("Projektname eingeben (z.B. 02_calculator): ").strip()
+        if not projekt_name:
+            projekt_name = "neues_projekt"
+    
+    # Projektordner erstellen
+    OUTPUT_DIR = f"projekte/{projekt_name}"
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     
     print("=" * 60)
     print("🚀 Starte Multi-Agent Crew mit Ollama")
+    print(f"   Projekt: {projekt_name}")
     print("   Product Owner: mistral:7b")
     print("   Developer: codellama:13b")
     print("   QA Engineer: mistral:7b")
@@ -224,10 +243,9 @@ if __name__ == "__main__":
     print("=" * 60)
     print(result)
     
-    # Ergebnisse in output/ Ordner speichern
-    # Code in ergebnis.md
+    # Ergebnisse in Projektordner speichern
     with open(f"{OUTPUT_DIR}/ergebnis.md", "w", encoding="utf-8") as f:
-        f.write("# Task-Management-System - Code & QA Report\n\n")
+        f.write(f"# {projekt_name} - Code & QA Report\n\n")
         f.write("## Generiert von CrewAI Multi-Agent System\n\n")
         f.write("### Agenten:\n")
         f.write("- Product Owner: mistral:7b\n")
@@ -238,15 +256,30 @@ if __name__ == "__main__":
         f.write(str(result))
     print(f"\n✅ Code & QA-Report wurde in '{OUTPUT_DIR}/ergebnis.md' gespeichert!")
     
-    # Dokumentation separat speichern (aus Task 4)
+    # Dokumentation separat speichern
     if hasattr(result, 'tasks_output') and len(result.tasks_output) >= 4:
         doc_output = result.tasks_output[3].raw
         with open(f"{OUTPUT_DIR}/dokumentation.md", "w", encoding="utf-8") as f:
             f.write(doc_output)
         print(f"✅ Dokumentation wurde in '{OUTPUT_DIR}/dokumentation.md' gespeichert!")
     else:
-        # Fallback: Gesamtergebnis auch als Dokumentation
         with open(f"{OUTPUT_DIR}/dokumentation.md", "w", encoding="utf-8") as f:
-            f.write("# Task-Management-System - Dokumentation\n\n")
+            f.write(f"# {projekt_name} - Dokumentation\n\n")
             f.write(str(result))
         print(f"✅ Dokumentation wurde in '{OUTPUT_DIR}/dokumentation.md' gespeichert!")
+    
+    # Projekt-README erstellen
+    with open(f"{OUTPUT_DIR}/README.md", "w", encoding="utf-8") as f:
+        f.write(f"# {projekt_name}\n\n")
+        f.write("> Generiert vom Multi-Agent CrewAI System\n\n")
+        f.write("## Dateien\n\n")
+        f.write("- `ergebnis.md` - Generierter Code + QA-Report\n")
+        f.write("- `dokumentation.md` - Technische Dokumentation\n\n")
+        f.write("## Generiert mit\n\n")
+        f.write("- Product Owner: mistral:7b\n")
+        f.write("- Developer: codellama:13b\n")
+        f.write("- QA Engineer: mistral:7b\n")
+        f.write("- Technical Writer: mistral:7b\n")
+    print(f"✅ README wurde in '{OUTPUT_DIR}/README.md' gespeichert!")
+    
+    print(f"\n📁 Alle Dateien im Ordner: {OUTPUT_DIR}/")
