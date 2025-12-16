@@ -26,5 +26,8 @@ Thumbs.db
 # Ollama Installer
 OllamaSetup.exe
 
+# CrewAI Output (generierte Dateien)
+output/
+
 # Logs
 *.log

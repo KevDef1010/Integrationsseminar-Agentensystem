@@ -203,6 +203,12 @@ crew = Crew(
 )
 
 if __name__ == "__main__":
+    import os
+    
+    # Output-Ordner erstellen falls nicht vorhanden
+    OUTPUT_DIR = "output"
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    
     print("=" * 60)
     print("🚀 Starte Multi-Agent Crew mit Ollama")
     print("   Product Owner: mistral:7b")
@@ -218,9 +224,9 @@ if __name__ == "__main__":
     print("=" * 60)
     print(result)
     
-    # Ergebnisse in separate Dateien speichern
+    # Ergebnisse in output/ Ordner speichern
     # Code in ergebnis.md
-    with open("ergebnis.md", "w", encoding="utf-8") as f:
+    with open(f"{OUTPUT_DIR}/ergebnis.md", "w", encoding="utf-8") as f:
         f.write("# Task-Management-System - Code & QA Report\n\n")
         f.write("## Generiert von CrewAI Multi-Agent System\n\n")
         f.write("### Agenten:\n")
@@ -230,17 +236,17 @@ if __name__ == "__main__":
         f.write("- Technical Writer: mistral:7b\n\n")
         f.write("---\n\n")
         f.write(str(result))
-    print("\n✅ Code & QA-Report wurde in 'ergebnis.md' gespeichert!")
+    print(f"\n✅ Code & QA-Report wurde in '{OUTPUT_DIR}/ergebnis.md' gespeichert!")
     
     # Dokumentation separat speichern (aus Task 4)
     if hasattr(result, 'tasks_output') and len(result.tasks_output) >= 4:
         doc_output = result.tasks_output[3].raw
-        with open("dokumentation.md", "w", encoding="utf-8") as f:
+        with open(f"{OUTPUT_DIR}/dokumentation.md", "w", encoding="utf-8") as f:
             f.write(doc_output)
-        print("✅ Dokumentation wurde in 'dokumentation.md' gespeichert!")
+        print(f"✅ Dokumentation wurde in '{OUTPUT_DIR}/dokumentation.md' gespeichert!")
     else:
         # Fallback: Gesamtergebnis auch als Dokumentation
-        with open("dokumentation.md", "w", encoding="utf-8") as f:
+        with open(f"{OUTPUT_DIR}/dokumentation.md", "w", encoding="utf-8") as f:
             f.write("# Task-Management-System - Dokumentation\n\n")
             f.write(str(result))
-        print("✅ Dokumentation wurde in 'dokumentation.md' gespeichert!")
+        print(f"✅ Dokumentation wurde in '{OUTPUT_DIR}/dokumentation.md' gespeichert!")
