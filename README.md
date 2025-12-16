@@ -37,7 +37,7 @@ ollama pull codellama:13b
 ### Schritt 3: Repository klonen
 
 ```bash
-git clone https://github.com/DEIN_USERNAME/integrationsseminar.git
+git clone https://github.com/KevDef1010/integrationsseminar.git
 cd integrationsseminar
 ```
 
