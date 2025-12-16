@@ -1,122 +1,166 @@
-# 🤖 Multi-Agent CrewAI Demo
+# ��� Multi-Agent KI-Demo mit CrewAI
 
-Ein Demonstrationsprojekt für **Multi-Agent Systeme** mit [CrewAI](https://crewai.com/) und lokalen [Ollama](https://ollama.ai/) LLMs.
+> **4 KI-Agenten arbeiten zusammen, um Code zu schreiben** - alles lokal auf deinem PC!
 
-## 📋 Projektübersicht
+## Was macht das Projekt?
 
-Dieses Projekt zeigt, wie mehrere KI-Agenten zusammenarbeiten können, um Software zu entwickeln:
+Dieses Projekt zeigt, wie mehrere KI-Agenten wie ein echtes Entwicklerteam zusammenarbeiten:
 
-| Agent | Modell | Aufgabe |
-|-------|--------|---------|
-| 🎯 **Product Owner** | Mistral 7B | Definiert User Stories & Anforderungen |
-| 💻 **Developer** | CodeLlama 13B | Implementiert den Code |
-| 🔍 **QA Engineer** | Mistral 7B | Code Review & Qualitätssicherung |
-| 📝 **Technical Writer** | Mistral 7B | Erstellt Dokumentation |
+1.  **Product Owner** - Schreibt die Anforderungen
+2.  **Developer** - Programmiert den Code  
+3.  **QA Engineer** - Findet Bugs und Fehler
+4.  **Technical Writer** - Schreibt die Dokumentation
 
-## 🚀 Features
+**Das Besondere:** Alles läuft LOKAL auf deinem Computer - keine Cloud, kein API-Key nötig!
 
-- **Lokale LLMs**: Alle Modelle laufen lokal über Ollama - keine Cloud-API nötig
-- **Multi-Agent Workflow**: Agenten arbeiten sequentiell zusammen
-- **Automatische Code-Generierung**: Vom Requirement zum fertigen Code
-- **QA-Prozess**: Automatische Code-Reviews mit Fehleranalyse
-- **Dokumentation**: Automatisch generierte technische Dokumentation
+---
 
-## 📦 Installation
+## ��� Schnellstart (5 Minuten)
 
-### Voraussetzungen
+### Schritt 1: Ollama installieren
 
-- Python 3.12+
-- [Ollama](https://ollama.ai/) installiert
-- Ausreichend RAM (mind. 16 GB empfohlen für 13B Modelle)
+Gehe zu **https://ollama.ai** und lade den Installer herunter.
 
-### Setup
+Nach der Installation: Öffne ein **neues Terminal** und teste:
+```bash
+ollama --version
+```
+
+### Schritt 2: KI-Modelle herunterladen
 
 ```bash
-# 1. Repository klonen
-git clone https://github.com/DEIN_USERNAME/integrationsseminar.git
-cd integrationsseminar
-
-# 2. Virtual Environment erstellen
-uv venv --python 3.12
-source .venv/Scripts/activate  # Windows/Git Bash
-# oder: source .venv/bin/activate  # Linux/Mac
-
-# 3. Abhängigkeiten installieren
-uv pip install crewai litellm
-
-# 4. Ollama Modelle herunterladen
 ollama pull mistral:7b
 ollama pull codellama:13b
 ```
+⚠️ **Achtung:** Das dauert ein paar Minuten und braucht ca. 12 GB Speicherplatz!
 
-## 🎮 Verwendung
+### Schritt 3: Repository klonen
 
 ```bash
-# Virtual Environment aktivieren
-source .venv/Scripts/activate
+git clone https://github.com/DEIN_USERNAME/integrationsseminar.git
+cd integrationsseminar
+```
 
-# Crew starten
+### Schritt 4: Python Environment einrichten
+
+**Option A: Mit UV (empfohlen)**
+```bash
+# UV installieren (falls noch nicht vorhanden)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+
+# Environment erstellen
+uv venv --python 3.12
+source .venv/Scripts/activate   # Windows Git Bash
+# source .venv/bin/activate     # Linux/Mac
+
+# Pakete installieren
+uv pip install crewai litellm
+```
+
+**Option B: Mit normalem pip**
+```bash
+python -m venv .venv
+source .venv/Scripts/activate   # Windows Git Bash
+# source .venv/bin/activate     # Linux/Mac
+
+pip install crewai litellm
+```
+
+### Schritt 5: Starten! ���
+
+```bash
 python multi_agent_crew.py
 ```
 
-Die Ergebnisse werden in folgenden Dateien gespeichert:
-- `ergebnis.md` - Generierter Code & QA-Report
-- `dokumentation.md` - Technische Dokumentation
+Die Ergebnisse findest du danach im Ordner `output/`.
 
-## 📁 Projektstruktur
+---
+
+## ❓ Häufige Probleme
+
+### "ollama: command not found"
+→ Öffne ein **neues Terminal** nach der Ollama-Installation
+
+### "No space left on device"
+→ Du brauchst ca. 12 GB freien Speicherplatz für die Modelle
+
+### Es dauert sehr lange
+→ Normal! Die großen Modelle (7B, 13B) brauchen Zeit. Beim ersten Start werden auch Caches erstellt.
+
+### Mein PC ist zu langsam
+→ Benutze kleinere Modelle! Ändere in `multi_agent_crew.py`:
+```python
+# Statt mistral:7b und codellama:13b
+model="ollama/llama3.2:1b"      # Kleiner, schneller
+model="ollama/qwen2.5-coder:1.5b"  # Gut für Code
+```
+
+---
+
+## ��� Projektstruktur
 
 ```
 integrationsseminar/
-├── multi_agent_crew.py    # Hauptskript mit Agent-Definitionen
-├── ergebnis.md            # Generierter Code & QA-Report
-├── dokumentation.md       # Technische Dokumentation
-├── README.md              # Diese Datei
-└── .venv/                 # Virtual Environment
+├── multi_agent_crew.py   ← Das Hauptskript (hier sind die Agenten definiert)
+├── README.md             ← Diese Anleitung
+├── .gitignore
+└── output/               ← Hier landen die Ergebnisse
+    ├── ergebnis.md       ← Generierter Code + QA-Report
+    └── dokumentation.md  ← Technische Dokumentation
 ```
 
-## 🔧 Konfiguration
+---
+
+## ��� Anpassen
+
+Du kannst das Projekt einfach anpassen:
+
+### Andere Aufgabe stellen
+Ändere die Task-Beschreibungen in `multi_agent_crew.py`:
+```python
+define_requirements = Task(
+    description="""Erstelle eine User Story für DEINE_IDEE...""",
+    ...
+)
+```
 
 ### Andere Modelle verwenden
-
-Du kannst die Modelle in `multi_agent_crew.py` anpassen:
-
 ```python
-# Beispiel: Kleinere Modelle für weniger RAM
-product_owner_llm = LLM(
-    model="ollama/llama3.2:1b",
+developer_llm = LLM(
+    model="ollama/MODELL_NAME",  # z.B. "ollama/llama3.2:3b"
     base_url="http://localhost:11434"
 )
 ```
 
-### Verfügbare Ollama Modelle
+Verfügbare Modelle siehst du mit: `ollama list`
 
-| Modell | Größe | RAM |
-|--------|-------|-----|
-| `llama3.2:1b` | ~1.3 GB | ~4 GB |
-| `qwen2.5-coder:1.5b` | ~1 GB | ~4 GB |
-| `mistral:7b` | ~4.1 GB | ~8 GB |
-| `codellama:13b` | ~7.4 GB | ~16 GB |
+---
 
-## 📊 Beispiel-Output
+## ��� Voraussetzungen
 
-Das System generiert automatisch:
+- **Python 3.12+**
+- **Ollama** installiert
+- **16 GB RAM** empfohlen (8 GB geht auch mit kleineren Modellen)
+- **12 GB Festplatte** für die KI-Modelle
 
-1. **User Stories** vom Product Owner
-2. **Python Code** vom Developer (z.B. Flask REST API)
-3. **QA-Report** mit gefundenen Problemen
-4. **Dokumentation** mit API-Beschreibung
+---
 
-## 🛠️ Technologien
+## ���️ Verwendete Technologien
 
-- [CrewAI](https://crewai.com/) - Multi-Agent Framework
-- [Ollama](https://ollama.ai/) - Lokale LLM Runtime
-- [LiteLLM](https://github.com/BerriAI/litellm) - LLM API Wrapper
-- [UV](https://github.com/astral-sh/uv) - Schneller Python Package Manager
+| Tool | Was es macht |
+|------|--------------|
+| [CrewAI](https://crewai.com/) | Framework für Multi-Agent Systeme |
+| [Ollama](https://ollama.ai/) | Führt KI-Modelle lokal aus |
+| [Mistral 7B](https://mistral.ai/) | Starkes allgemeines Sprachmodell |
+| [CodeLlama 13B](https://ai.meta.com/llama/) | Spezialisiert auf Code |
 
-## 📄 Lizenz
+---
 
-MIT License
+## ��� Lizenz
 
-## 👤 Autor
+MIT - Mach damit was du willst!
 
-Erstellt für das Integrationsseminar 2025
+---
+
+**Fragen?** Erstelle ein Issue oder frag deinen Dozenten ���
