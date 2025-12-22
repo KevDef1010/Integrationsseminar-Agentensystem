@@ -331,12 +331,13 @@ if __name__ == "__main__":
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
     
-    base_dir = input("Experiment-Ordner (Enter fuer 'experiments'): ").strip() or "experiments"
+    base_dir = input("Projekt-Ordner (Enter fuer 'projekte'): ").strip() or "projekte"
     
     experiments = load_all_experiments(base_dir)
     
     if not experiments:
         print("Keine Experimente gefunden.")
+        print("Tipp: Experimente liegen jetzt im 'projekte/' Ordner.")
         exit()
     
     print(f"\n📊 {len(experiments)} Experimente gefunden.\n")

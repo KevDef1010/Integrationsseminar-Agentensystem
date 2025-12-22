@@ -1,5 +1,0 @@
-agent_role,model,task_name,start_time,end_time,duration_seconds,input_chars,output_chars,estimated_input_tokens,estimated_output_tokens,success,error_message
-Product Owner,mistral:7b,define_requirements,1766404129.797148,1766404181.189366,51.39,214,2221,53,555,True,
-Python Developer,codellama:13b,implement_code,1766404142.6197977,1766404181.392065,38.77,214,3024,53,756,True,
-QA Engineer,mistral:7b,review_code,1766404155.4424472,1766404181.5946376,26.15,214,4200,53,1050,True,
-Technical Writer,mistral:7b,write_documentation,1766404168.2650967,1766404181.7970524,13.53,214,4047,53,1011,True,

@@ -327,17 +327,18 @@ def run_experiment(
     experiment_name: str,
     task_description: str = None,
     models: Dict[str, str] = None,
-    output_base_dir: str = "experiments"
+    output_base_dir: str = "projekte"
 ) -> ExperimentResult:
     """
     Fuehrt ein vollstaendig getrackte Experiment durch.
+    Speichert Spiel UND Metriken im selben Ordner unter projekte/.
     
     Args:
-        experiment_name: Name des Experiments (z.B. "snake_game_v1")
+        experiment_name: Name des Experiments (z.B. "01_pokemon_spiel")
         task_description: Optionale eigene Task-Beschreibung
         models: Dict mit Agent-Modell-Zuordnung, z.B.:
                 {"product_owner": "mistral:7b", "developer": "codellama:13b"}
-        output_base_dir: Basis-Ordner fuer Ergebnisse
+        output_base_dir: Basis-Ordner fuer Ergebnisse (default: projekte/)
     
     Returns:
         ExperimentResult mit allen Metriken

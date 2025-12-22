@@ -1,9 +1,0 @@
-phase,agent,task,cpu_percent,ram_percent,ram_used_gb
-task_start,Product Owner,define_requirements,5.1,48.4,15.41
-task_end,Product Owner,define_requirements,13.8,48.4,15.41
-task_start,Python Developer,implement_code,1.8,48.4,15.41
-task_end,Python Developer,implement_code,12.8,48.4,15.43
-task_start,QA Engineer,review_code,12.3,48.4,15.42
-task_end,QA Engineer,review_code,2.7,48.4,15.42
-task_start,Technical Writer,write_documentation,15.0,48.4,15.42
-task_end,Technical Writer,write_documentation,2.3,48.4,15.42
