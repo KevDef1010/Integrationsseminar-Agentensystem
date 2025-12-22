@@ -407,13 +407,19 @@ def run_experiment(
         developer = Agent(
             role="Python Developer",
             goal="VOLLSTAENDIGEN, AUSFUEHRBAREN Python-Code schreiben. Immer kompletten Code ausgeben, nie Platzhalter oder '...' verwenden!",
-            backstory="""Du bist ein erfahrener Python-Entwickler. 
-            WICHTIG: Du schreibst IMMER vollstaendigen, ausfuehrbaren Code!
-            - Keine Platzhalter wie '...' oder 'TODO'
-            - Keine Erklaerungen, NUR Code
-            - Code muss mit 'python datei.py' direkt startbar sein
-            - Immer 'if __name__ == "__main__":' am Ende
-            - Nur Standardbibliotheken (tkinter, random) verwenden""",
+            backstory="""Du bist ein erfahrener Python-Spieleentwickler mit 10 Jahren Erfahrung.
+            
+            KRITISCHE REGELN - NIEMALS BRECHEN:
+            1. Du schreibst IMMER vollstaendigen, ausfuehrbaren Code
+            2. KEINE Platzhalter wie '...' oder 'TODO' oder 'pass'
+            3. KEINE Erklaerungen vor oder nach dem Code
+            4. Jede Klasse und Funktion ist VOLLSTAENDIG implementiert
+            5. Code muss mit 'python datei.py' direkt startbar sein
+            6. IMMER 'if __name__ == "__main__":' am Ende
+            7. Nur Standardbibliotheken: tkinter, random, json
+            8. Bei komplexen Spielen: Mindestens 400 Zeilen Code
+            9. Alle Features aus der Spezifikation muessen implementiert sein
+            10. Saubere Klassenstruktur mit klaren Verantwortlichkeiten""",
             llm=developer_llm,
             verbose=True
         )
@@ -458,14 +464,16 @@ def run_experiment(
             WICHTIGE REGELN:
             1. NUR Python-Code ausgeben, keine Erklaerungen davor oder danach
             2. Code muss mit 'python datei.py' DIREKT starten
-            3. Verwende NUR tkinter und random (sind bei Python dabei)
+            3. Verwende NUR tkinter, random und json (sind bei Python dabei)
             4. IMMER 'if __name__ == "__main__":' am Ende
             5. KEINE Platzhalter wie '...' oder 'pass' oder 'TODO'
-            6. JEDE Funktion muss vollstaendig implementiert sein
-            7. Mindestens 100 Zeilen Code
+            6. JEDE Funktion und Klasse muss vollstaendig implementiert sein
+            7. Bei komplexen Spielen: Mindestens 400 Zeilen Code
+            8. ALLE Features aus der Spezifikation muessen funktionieren
+            9. Teste gedanklich jeden Code-Pfad bevor du ihn schreibst
             
             Beginne direkt mit: import tkinter as tk""",
-            expected_output="Vollstaendiger Python-Code der sofort ausfuehrbar ist",
+            expected_output="Vollstaendiger Python-Code (400+ Zeilen fuer komplexe Spiele) der sofort ausfuehrbar ist",
             agent=developer,
             context=[define_requirements]
         )
@@ -672,7 +680,105 @@ if __name__ == "__main__":
     
     if choice == "1":
         name = input("Experiment-Name (z.B. snake_test): ").strip() or "experiment"
-        task = input("Task-Beschreibung (Enter fuer Snake-Spiel): ").strip() or "Snake-Spiel mit tkinter GUI"
+        
+        print("\nVerfuegbare Vorlagen:")
+        print("  1. Snake-Spiel (einfach)")
+        print("  2. Pokemon-Diamant RPG (komplex)")
+        print("  3. Eigene Beschreibung")
+        
+        template_choice = input("Vorlage (1/2/3): ").strip() or "1"
+        
+        if template_choice == "2":
+            task = """
+POKEMON DIAMANT-INSPIRIERTES RPG-SPIEL
+======================================
+
+Erstelle ein vollstaendiges Pokemon-RPG mit tkinter, das folgende Features hat:
+
+=== STARTBILDSCHIRM ===
+- Titelbildschirm mit "Pokemon Abenteuer" Logo (ASCII-Art oder Text)
+- "Neues Spiel" Button
+- Professor beguesst den Spieler und fragt nach seinem Namen
+- Auswahl aus 3 Starter-Pokemon:
+  * Chelast (Pflanze) - HP: 55, Attacken: Tackle, Rankenhieb, Rasierblatt, Synthese
+  * Panflam (Feuer) - HP: 52, Attacken: Kratzer, Glut, Flammenwurf, Ruckzuckhieb  
+  * Plinfa (Wasser) - HP: 53, Attacken: Pfund, Blubber, Aquawelle, Schnabel
+
+=== SPIELWELT (Bewegung) ===
+- 400x400 Pixel Canvas mit Gras-Tiles (gruene Rechtecke) und Wegen (braun)
+- Spieler als rotes Quadrat (oder einfache Figur)
+- Steuerung mit WASD oder Pfeiltasten
+- Mindestens 3 verschiedene Bereiche:
+  * Startstadt (sicherer Bereich, keine Kaempfe)
+  * Route 1 (Gras mit wilden Pokemon)
+  * Route 2 (staerkere wilde Pokemon)
+- Wenn Spieler auf Gras laeuft: 20% Chance auf wildes Pokemon
+
+=== WILDE POKEMON ===
+- Mindestens 6 verschiedene wilde Pokemon mit unterschiedlichen Leveln:
+  * Staralili (Normal/Flug) - Level 2-4
+  * Sheinux (Elektro) - Level 3-5
+  * Bidiza (Normal) - Level 2-3
+  * Zirpurze (Kaefer) - Level 2-4
+  * Knospi (Pflanze) - Level 4-6
+  * Ponita (Feuer) - Level 5-7
+- Jedes Pokemon hat 4 Attacken
+
+=== KAMPFSYSTEM (Rundenbasiert) ===
+- Wechsel zu Kampfbildschirm bei Begegnung
+- Anzeige beider Pokemon mit:
+  * Namen und Level
+  * HP-Balken (gruen/gelb/rot je nach HP)
+  * Aktueller HP-Wert
+- 4 Buttons fuer Attacken des eigenen Pokemons
+- "Flucht" Button (50% Erfolgschance)
+- "Pokemon wechseln" Button (wenn mehrere Pokemon)
+- Schadensberechnung: Basis-Schaden * Random(0.85-1.0) * Typeneffektivitaet
+- Typeneffektivitaet:
+  * Feuer > Pflanze > Wasser > Feuer
+  * Normal ist neutral gegen alles
+
+=== POKEMON FANGEN ===
+- "Pokeball werfen" Button im Kampf
+- Fangchance basiert auf HP des Gegners: (1 - gegner_hp/max_hp) * 0.5
+- Bei Erfolg: Pokemon wird zum Team hinzugefuegt (max 6 Pokemon)
+- Pokeball-Inventar: Starte mit 10 Pokeballs
+
+=== TEAM UND LEVELING ===
+- Team-Anzeige (Taste T druecken) zeigt alle eigenen Pokemon
+- XP-System: Besiegte Pokemon geben XP = gegner_level * 10
+- Level-Up bei XP >= level * 50
+- Bei Level-Up: +5 Max-HP, +2 Angriffsstaerke
+
+=== NPC TRAINER ===
+- Mindestens 2 NPC-Trainer auf der Map (blaue Quadrate)
+- Trainer haben 2-3 Pokemon
+- Kampf startet bei Beruehrung
+- Trainer geben Geld bei Sieg: trainer_pokemon_count * 100
+
+=== HUD UND MENUES ===
+- Oben: Spielername, Geld, Pokeball-Anzahl
+- ESC-Menue mit: Team anzeigen, Speichern (in JSON), Beenden
+- Gewinn-Bildschirm nach Besiegen aller Trainer
+
+=== TECHNISCHE ANFORDERUNGEN ===
+- ALLES in einer einzigen Python-Datei
+- NUR tkinter und random (plus json fuer Speichern)
+- Mindestens 400 Zeilen Code
+- Saubere Klassenstruktur:
+  * class Pokemon: name, typ, level, hp, max_hp, attacks, xp
+  * class Attack: name, typ, damage
+  * class Player: name, team, position, money, pokeballs
+  * class GameWorld: canvas, tiles, npcs, wild_pokemon_zones
+  * class Battle: player_pokemon, enemy_pokemon, is_trainer_battle
+  * class Game: Hauptklasse die alles verbindet
+- if __name__ == "__main__": am Ende
+"""
+            name = "pokemon_diamant_rpg"
+        elif template_choice == "3":
+            task = input("Task-Beschreibung: ").strip()
+        else:
+            task = "Snake-Spiel mit tkinter GUI"
         
         run_experiment(
             experiment_name=name,
