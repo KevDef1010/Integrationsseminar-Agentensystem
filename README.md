@@ -47,12 +47,26 @@ cd Integrationsseminar-Agentensystem
 ```bash
 # UV installieren (falls noch nicht vorhanden)
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
+
+# Terminal neu starten ODER:
+source $HOME/.local/bin/env      # Linux/Mac
+# Auf Windows Git Bash: gleicher Befehl
 
 # Environment erstellen
 uv venv --python 3.12
-source .venv/Scripts/activate   # Windows Git Bash
-# source .venv/bin/activate     # Linux/Mac
+
+# Environment aktivieren:
+# Mac/Linux:
+source .venv/bin/activate
+
+# Windows (Git Bash):
+source .venv/Scripts/activate
+
+# Windows (CMD):
+.venv\Scripts\activate
+
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
 
 # Pakete installieren
 uv pip install crewai litellm
@@ -60,20 +74,32 @@ uv pip install crewai litellm
 
 **Option B: Mit normalem pip**
 ```bash
-python -m venv .venv
-source .venv/Scripts/activate   # Windows Git Bash
-# source .venv/bin/activate     # Linux/Mac
+# Environment erstellen
+python3 -m venv .venv    # Mac/Linux (python3!)
+python -m venv .venv     # Windows
 
+# Environment aktivieren:
+# Mac/Linux:
+source .venv/bin/activate
+
+# Windows (Git Bash):
+source .venv/Scripts/activate
+
+# Windows (CMD):
+.venv\Scripts\activate
+
+# Pakete installieren
 pip install crewai litellm
 ```
 
 ### Schritt 5: Starten!
 
 ```bash
-python multi_agent_crew.py
+python multi_agent_crew.py      # Windows
+python3 multi_agent_crew.py     # Mac/Linux (falls python nicht funktioniert)
 ```
 
-Die Ergebnisse findest du danach im Ordner `output/`.
+Die Ergebnisse findest du danach im Ordner `projekte/`.
 
 ---
 
@@ -94,6 +120,40 @@ Benutze kleinere Modelle! Aendere in `multi_agent_crew.py`:
 # Statt mistral:7b und codellama:13b
 model="ollama/llama3.2:1b"      # Kleiner, schneller
 model="ollama/qwen2.5-coder:1.5b"  # Gut fuer Code
+```
+
+---
+
+## Mac-spezifische Hinweise
+
+### Python installieren (falls nicht vorhanden)
+```bash
+# Mit Homebrew (empfohlen):
+brew install python@3.12
+
+# Oder von python.org herunterladen
+```
+
+### Ollama auf Mac installieren
+```bash
+# Mit Homebrew:
+brew install ollama
+
+# Ollama starten (muss im Hintergrund laufen!):
+ollama serve
+```
+
+### "command not found: python"
+Auf Mac heisst Python oft `python3`:
+```bash
+python3 --version
+python3 multi_agent_crew.py
+```
+
+### Tkinter-Fehler (fuer Snake-Spiel)
+Falls tkinter fehlt:
+```bash
+brew install python-tk@3.12
 ```
 
 ---
