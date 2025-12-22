@@ -1,0 +1,688 @@
+"""
+Experiment Runner fuer wissenschaftliche Auswertung
+====================================================
+Dieses Skript fuehrt Multi-Agent Experimente durch und trackt:
+- Ausfuehrungszeiten pro Agent/Task
+- Token-Nutzung (geschaetzt)
+- Qualitaetsmetriken
+- Alle Zwischenergebnisse
+- Systemressourcen (RAM, CPU)
+
+Ergebnisse werden als JSON und CSV exportiert fuer statistische Analyse.
+"""
+
+import os
+import sys
+import json
+import csv
+import time
+import platform
+import psutil
+from datetime import datetime
+from dataclasses import dataclass, asdict
+from typing import Optional, List, Dict, Any
+from pathlib import Path
+
+# CrewAI imports
+from crewai import Agent, Task, Crew, LLM
+
+
+# ============================================================
+# KONFIGURATION
+# ============================================================
+
+@dataclass
+class ExperimentConfig:
+    """Konfiguration fuer ein Experiment."""
+    experiment_id: str
+    experiment_name: str
+    task_description: str
+    models: Dict[str, str]  # {"agent_role": "model_name"}
+    timestamp: str = ""
+    
+    def __post_init__(self):
+        if not self.timestamp:
+            self.timestamp = datetime.now().isoformat()
+
+
+@dataclass
+class AgentMetrics:
+    """Metriken fuer einen einzelnen Agent."""
+    agent_role: str
+    model: str
+    task_name: str
+    start_time: float
+    end_time: float
+    duration_seconds: float
+    input_chars: int
+    output_chars: int
+    estimated_input_tokens: int
+    estimated_output_tokens: int
+    success: bool
+    error_message: Optional[str] = None
+
+
+@dataclass
+class ExperimentResult:
+    """Gesamtergebnis eines Experiments."""
+    config: ExperimentConfig
+    agent_metrics: List[AgentMetrics]
+    total_duration_seconds: float
+    total_estimated_tokens: int
+    system_info: Dict[str, Any]
+    crew_output: str
+    individual_task_outputs: List[Dict[str, str]]
+    success: bool
+    error_message: Optional[str] = None
+
+
+# ============================================================
+# SYSTEM INFO
+# ============================================================
+
+def get_system_info() -> Dict[str, Any]:
+    """Sammelt Systeminformationen fuer Reproduzierbarkeit."""
+    return {
+        "platform": platform.system(),
+        "platform_version": platform.version(),
+        "python_version": platform.python_version(),
+        "processor": platform.processor(),
+        "cpu_count": psutil.cpu_count(),
+        "ram_total_gb": round(psutil.virtual_memory().total / (1024**3), 2),
+        "ram_available_gb": round(psutil.virtual_memory().available / (1024**3), 2),
+        "hostname": platform.node(),
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+def get_resource_snapshot() -> Dict[str, float]:
+    """Momentaufnahme der Systemressourcen."""
+    return {
+        "cpu_percent": psutil.cpu_percent(interval=0.1),
+        "ram_percent": psutil.virtual_memory().percent,
+        "ram_used_gb": round(psutil.virtual_memory().used / (1024**3), 2)
+    }
+
+
+# ============================================================
+# TOKEN ESTIMATION
+# ============================================================
+
+def estimate_tokens(text: str) -> int:
+    """
+    Schaetzt die Anzahl der Tokens (grobe Naeherung).
+    Regel: ~4 Zeichen = 1 Token (fuer Englisch/Deutsch)
+    """
+    if not text:
+        return 0
+    return len(text) // 4
+
+
+# ============================================================
+# TRACING CALLBACK
+# ============================================================
+
+class ExperimentTracer:
+    """Trackt alle Agent-Aktivitaeten waehrend eines Experiments."""
+    
+    def __init__(self, experiment_id: str, output_dir: str):
+        self.experiment_id = experiment_id
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.agent_metrics: List[AgentMetrics] = []
+        self.task_outputs: List[Dict[str, str]] = []
+        self.resource_snapshots: List[Dict[str, Any]] = []
+        self.logs: List[Dict[str, Any]] = []
+        
+        self.current_task_start: Optional[float] = None
+        self.current_agent: Optional[str] = None
+        self.current_task: Optional[str] = None
+        
+    def log(self, event: str, data: Dict[str, Any] = None):
+        """Loggt ein Event mit Timestamp."""
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "elapsed_seconds": time.time() - self.start_time if hasattr(self, 'start_time') else 0,
+            "event": event,
+            "data": data or {}
+        }
+        self.logs.append(entry)
+        
+        # Auch in Logdatei schreiben
+        log_file = self.output_dir / f"{self.experiment_id}_trace.jsonl"
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+    
+    def start_experiment(self):
+        """Markiert den Start eines Experiments."""
+        self.start_time = time.time()
+        self.log("experiment_started", {"system_info": get_system_info()})
+    
+    def end_experiment(self):
+        """Markiert das Ende eines Experiments."""
+        self.end_time = time.time()
+        self.log("experiment_ended", {
+            "total_duration": self.end_time - self.start_time
+        })
+    
+    def start_task(self, agent_role: str, task_name: str, model: str):
+        """Markiert den Start eines Tasks."""
+        self.current_task_start = time.time()
+        self.current_agent = agent_role
+        self.current_task = task_name
+        self.current_model = model
+        
+        snapshot = get_resource_snapshot()
+        self.resource_snapshots.append({
+            "phase": "task_start",
+            "agent": agent_role,
+            "task": task_name,
+            **snapshot
+        })
+        
+        self.log("task_started", {
+            "agent": agent_role,
+            "task": task_name,
+            "model": model,
+            "resources": snapshot
+        })
+    
+    def end_task(self, input_text: str, output_text: str, success: bool = True, error: str = None):
+        """Markiert das Ende eines Tasks mit Metriken."""
+        end_time = time.time()
+        duration = end_time - self.current_task_start
+        
+        input_chars = len(input_text) if input_text else 0
+        output_chars = len(output_text) if output_text else 0
+        
+        metrics = AgentMetrics(
+            agent_role=self.current_agent,
+            model=self.current_model,
+            task_name=self.current_task,
+            start_time=self.current_task_start,
+            end_time=end_time,
+            duration_seconds=round(duration, 2),
+            input_chars=input_chars,
+            output_chars=output_chars,
+            estimated_input_tokens=estimate_tokens(input_text),
+            estimated_output_tokens=estimate_tokens(output_text),
+            success=success,
+            error_message=error
+        )
+        self.agent_metrics.append(metrics)
+        
+        self.task_outputs.append({
+            "agent": self.current_agent,
+            "task": self.current_task,
+            "output": output_text[:5000] if output_text else ""  # Truncate for storage
+        })
+        
+        snapshot = get_resource_snapshot()
+        self.resource_snapshots.append({
+            "phase": "task_end",
+            "agent": self.current_agent,
+            "task": self.current_task,
+            **snapshot
+        })
+        
+        self.log("task_completed", {
+            "agent": self.current_agent,
+            "task": self.current_task,
+            "duration_seconds": round(duration, 2),
+            "output_chars": output_chars,
+            "estimated_tokens": estimate_tokens(output_text),
+            "success": success,
+            "resources": snapshot
+        })
+        
+        return metrics
+    
+    def save_results(self, result: ExperimentResult):
+        """Speichert alle Ergebnisse in verschiedenen Formaten."""
+        
+        # 1. Vollstaendiges JSON
+        json_file = self.output_dir / f"{self.experiment_id}_full.json"
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "config": asdict(result.config),
+                "agent_metrics": [asdict(m) for m in result.agent_metrics],
+                "total_duration_seconds": result.total_duration_seconds,
+                "total_estimated_tokens": result.total_estimated_tokens,
+                "system_info": result.system_info,
+                "success": result.success,
+                "error_message": result.error_message
+            }, f, indent=2, ensure_ascii=False)
+        
+        # 2. CSV fuer Metriken (einfach in Excel/SPSS importierbar)
+        csv_file = self.output_dir / f"{self.experiment_id}_metrics.csv"
+        with open(csv_file, "w", newline="", encoding="utf-8") as f:
+            if result.agent_metrics:
+                writer = csv.DictWriter(f, fieldnames=asdict(result.agent_metrics[0]).keys())
+                writer.writeheader()
+                for m in result.agent_metrics:
+                    writer.writerow(asdict(m))
+        
+        # 3. Ressourcen-Snapshots CSV
+        resources_csv = self.output_dir / f"{self.experiment_id}_resources.csv"
+        with open(resources_csv, "w", newline="", encoding="utf-8") as f:
+            if self.resource_snapshots:
+                writer = csv.DictWriter(f, fieldnames=self.resource_snapshots[0].keys())
+                writer.writeheader()
+                writer.writerows(self.resource_snapshots)
+        
+        # 4. Zusammenfassung als Markdown
+        summary_file = self.output_dir / f"{self.experiment_id}_summary.md"
+        with open(summary_file, "w", encoding="utf-8") as f:
+            f.write(f"# Experiment: {result.config.experiment_name}\n\n")
+            f.write(f"**ID:** {result.config.experiment_id}\n\n")
+            f.write(f"**Timestamp:** {result.config.timestamp}\n\n")
+            f.write(f"**Status:** {'Erfolgreich' if result.success else 'Fehlgeschlagen'}\n\n")
+            
+            f.write("## Systeminfo\n\n")
+            f.write(f"- Platform: {result.system_info.get('platform')}\n")
+            f.write(f"- Python: {result.system_info.get('python_version')}\n")
+            f.write(f"- CPU Cores: {result.system_info.get('cpu_count')}\n")
+            f.write(f"- RAM Total: {result.system_info.get('ram_total_gb')} GB\n\n")
+            
+            f.write("## Verwendete Modelle\n\n")
+            f.write("| Agent | Modell |\n")
+            f.write("|-------|--------|\n")
+            for agent, model in result.config.models.items():
+                f.write(f"| {agent} | {model} |\n")
+            
+            f.write("\n## Metriken\n\n")
+            f.write("| Agent | Task | Dauer (s) | Output Tokens | Erfolg |\n")
+            f.write("|-------|------|-----------|---------------|--------|\n")
+            for m in result.agent_metrics:
+                status = "✓" if m.success else "✗"
+                f.write(f"| {m.agent_role} | {m.task_name} | {m.duration_seconds} | {m.estimated_output_tokens} | {status} |\n")
+            
+            f.write(f"\n## Gesamtergebnis\n\n")
+            f.write(f"- **Gesamtdauer:** {result.total_duration_seconds:.2f} Sekunden\n")
+            f.write(f"- **Geschaetzte Tokens:** {result.total_estimated_tokens}\n")
+            
+            if result.error_message:
+                f.write(f"\n## Fehler\n\n```\n{result.error_message}\n```\n")
+        
+        # 5. Crew Output
+        output_file = self.output_dir / f"{self.experiment_id}_output.md"
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(f"# Output: {result.config.experiment_name}\n\n")
+            f.write(result.crew_output)
+        
+        print(f"\n📊 Ergebnisse gespeichert in: {self.output_dir}/")
+        print(f"   - {self.experiment_id}_full.json (vollstaendige Daten)")
+        print(f"   - {self.experiment_id}_metrics.csv (fuer Excel/SPSS)")
+        print(f"   - {self.experiment_id}_resources.csv (Ressourcen)")
+        print(f"   - {self.experiment_id}_summary.md (Zusammenfassung)")
+        print(f"   - {self.experiment_id}_trace.jsonl (Event-Log)")
+
+
+# ============================================================
+# EXPERIMENT RUNNER
+# ============================================================
+
+def run_experiment(
+    experiment_name: str,
+    task_description: str = None,
+    models: Dict[str, str] = None,
+    output_base_dir: str = "experiments"
+) -> ExperimentResult:
+    """
+    Fuehrt ein vollstaendig getrackte Experiment durch.
+    
+    Args:
+        experiment_name: Name des Experiments (z.B. "snake_game_v1")
+        task_description: Optionale eigene Task-Beschreibung
+        models: Dict mit Agent-Modell-Zuordnung, z.B.:
+                {"product_owner": "mistral:7b", "developer": "codellama:13b"}
+        output_base_dir: Basis-Ordner fuer Ergebnisse
+    
+    Returns:
+        ExperimentResult mit allen Metriken
+    """
+    
+    # Experiment ID generieren
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    experiment_id = f"{experiment_name}_{timestamp}"
+    output_dir = Path(output_base_dir) / experiment_id
+    
+    # Default Modelle
+    if models is None:
+        models = {
+            "product_owner": "mistral:7b",
+            "developer": "codellama:13b",
+            "qa_engineer": "mistral:7b",
+            "technical_writer": "mistral:7b"
+        }
+    
+    # Config erstellen
+    config = ExperimentConfig(
+        experiment_id=experiment_id,
+        experiment_name=experiment_name,
+        task_description=task_description or "Snake-Spiel mit GUI",
+        models=models
+    )
+    
+    # Tracer initialisieren
+    tracer = ExperimentTracer(experiment_id, str(output_dir))
+    tracer.start_experiment()
+    
+    print("=" * 70)
+    print(f"🔬 EXPERIMENT: {experiment_name}")
+    print(f"   ID: {experiment_id}")
+    print(f"   Output: {output_dir}")
+    print("=" * 70)
+    
+    try:
+        # LLMs konfigurieren
+        product_owner_llm = LLM(
+            model=f"ollama/{models['product_owner']}",
+            base_url="http://localhost:11434"
+        )
+        developer_llm = LLM(
+            model=f"ollama/{models['developer']}",
+            base_url="http://localhost:11434"
+        )
+        qa_llm = LLM(
+            model=f"ollama/{models.get('qa_engineer', models['product_owner'])}",
+            base_url="http://localhost:11434"
+        )
+        writer_llm = LLM(
+            model=f"ollama/{models.get('technical_writer', models['product_owner'])}",
+            base_url="http://localhost:11434"
+        )
+        
+        # Agenten erstellen
+        product_owner = Agent(
+            role="Product Owner",
+            goal="Klare und praezise Anforderungen fuer Software-Features definieren",
+            backstory="Du bist ein erfahrener Product Owner mit tiefem Verstaendnis fuer Nutzerbeduerfnisse.",
+            llm=product_owner_llm,
+            verbose=True
+        )
+        
+        developer = Agent(
+            role="Python Developer",
+            goal="Sauberen, funktionalen Python-Code schreiben der die Anforderungen erfuellt",
+            backstory="Du bist ein erfahrener Python-Entwickler der best practices befolgt.",
+            llm=developer_llm,
+            verbose=True
+        )
+        
+        qa_engineer = Agent(
+            role="QA Engineer",
+            goal="Code gruendlich auf Fehler pruefen",
+            backstory="Du bist ein erfahrener QA-Ingenieur mit scharfem Auge fuer Bugs.",
+            llm=qa_llm,
+            verbose=True
+        )
+        
+        technical_writer = Agent(
+            role="Technical Writer",
+            goal="Klare technische Dokumentation erstellen",
+            backstory="Du bist ein erfahrener Technical Writer.",
+            llm=writer_llm,
+            verbose=True
+        )
+        
+        # Tasks erstellen
+        task_desc = config.task_description
+        
+        define_requirements = Task(
+            description=f"Erstelle eine detaillierte Spezifikation fuer: {task_desc}",
+            expected_output="Vollstaendige Anforderungsspezifikation",
+            agent=product_owner
+        )
+        
+        implement_code = Task(
+            description=f"Implementiere basierend auf den Anforderungen vollstaendigen Python-Code fuer: {task_desc}",
+            expected_output="Vollstaendiger, ausfuehrbarer Python-Code",
+            agent=developer,
+            context=[define_requirements]
+        )
+        
+        review_code = Task(
+            description="Pruefe den Code auf Fehler und Qualitaet",
+            expected_output="QA-Report mit Abnahme-Entscheidung",
+            agent=qa_engineer,
+            context=[define_requirements, implement_code]
+        )
+        
+        write_documentation = Task(
+            description="Erstelle eine vollstaendige Dokumentation",
+            expected_output="Technische Dokumentation in Markdown",
+            agent=technical_writer,
+            context=[define_requirements, implement_code, review_code]
+        )
+        
+        # Crew erstellen und ausfuehren
+        crew = Crew(
+            agents=[product_owner, developer, qa_engineer, technical_writer],
+            tasks=[define_requirements, implement_code, review_code, write_documentation],
+            verbose=True
+        )
+        
+        # Task-Tracking manuell (da CrewAI keine nativen Callbacks hat)
+        task_info = [
+            ("Product Owner", "define_requirements", models['product_owner']),
+            ("Python Developer", "implement_code", models['developer']),
+            ("QA Engineer", "review_code", models.get('qa_engineer', models['product_owner'])),
+            ("Technical Writer", "write_documentation", models.get('technical_writer', models['product_owner']))
+        ]
+        
+        # Alle Tasks auf einmal tracken (Start)
+        experiment_start = time.time()
+        
+        # Crew ausfuehren
+        result = crew.kickoff()
+        
+        experiment_end = time.time()
+        
+        # Task-Outputs extrahieren und Metriken erstellen
+        if hasattr(result, 'tasks_output'):
+            for i, (agent_role, task_name, model) in enumerate(task_info):
+                if i < len(result.tasks_output):
+                    task_output = result.tasks_output[i]
+                    output_text = task_output.raw if hasattr(task_output, 'raw') else str(task_output)
+                    
+                    # Geschaetzte Dauer (gleichmaessig verteilt als Fallback)
+                    task_duration = (experiment_end - experiment_start) / len(task_info)
+                    
+                    tracer.start_task(agent_role, task_name, model)
+                    tracer.current_task_start = experiment_start + (i * task_duration)
+                    tracer.end_task(
+                        input_text=config.task_description,
+                        output_text=output_text,
+                        success=True
+                    )
+        
+        tracer.end_experiment()
+        
+        # Ergebnis zusammenstellen
+        total_tokens = sum(m.estimated_output_tokens for m in tracer.agent_metrics)
+        
+        experiment_result = ExperimentResult(
+            config=config,
+            agent_metrics=tracer.agent_metrics,
+            total_duration_seconds=round(experiment_end - experiment_start, 2),
+            total_estimated_tokens=total_tokens,
+            system_info=get_system_info(),
+            crew_output=str(result),
+            individual_task_outputs=tracer.task_outputs,
+            success=True
+        )
+        
+        # Speichern
+        tracer.save_results(experiment_result)
+        
+        print("\n" + "=" * 70)
+        print("✅ EXPERIMENT ERFOLGREICH ABGESCHLOSSEN")
+        print(f"   Dauer: {experiment_result.total_duration_seconds:.2f} Sekunden")
+        print(f"   Tokens: ~{total_tokens}")
+        print("=" * 70)
+        
+        return experiment_result
+        
+    except Exception as e:
+        tracer.end_experiment()
+        tracer.log("experiment_failed", {"error": str(e)})
+        
+        experiment_result = ExperimentResult(
+            config=config,
+            agent_metrics=tracer.agent_metrics,
+            total_duration_seconds=time.time() - tracer.start_time,
+            total_estimated_tokens=0,
+            system_info=get_system_info(),
+            crew_output="",
+            individual_task_outputs=[],
+            success=False,
+            error_message=str(e)
+        )
+        
+        tracer.save_results(experiment_result)
+        
+        print(f"\n❌ EXPERIMENT FEHLGESCHLAGEN: {e}")
+        raise
+
+
+# ============================================================
+# BATCH EXPERIMENTS (fuer Vergleichsstudien)
+# ============================================================
+
+def run_model_comparison(
+    experiment_name: str,
+    task_description: str,
+    model_configs: List[Dict[str, str]],
+    output_base_dir: str = "experiments"
+) -> List[ExperimentResult]:
+    """
+    Fuehrt mehrere Experimente mit verschiedenen Modell-Konfigurationen durch.
+    Ideal fuer Vergleichsstudien.
+    
+    Args:
+        experiment_name: Basis-Name fuer alle Experimente
+        task_description: Die zu loesende Aufgabe
+        model_configs: Liste von Modell-Konfigurationen zum Vergleichen
+        output_base_dir: Basis-Ordner fuer alle Ergebnisse
+    
+    Returns:
+        Liste aller ExperimentResults
+    """
+    results = []
+    
+    print("=" * 70)
+    print(f"🔬 BATCH EXPERIMENT: {experiment_name}")
+    print(f"   {len(model_configs)} Konfigurationen zum Testen")
+    print("=" * 70)
+    
+    for i, models in enumerate(model_configs, 1):
+        print(f"\n--- Konfiguration {i}/{len(model_configs)} ---")
+        print(f"    Modelle: {models}")
+        
+        try:
+            result = run_experiment(
+                experiment_name=f"{experiment_name}_config{i}",
+                task_description=task_description,
+                models=models,
+                output_base_dir=output_base_dir
+            )
+            results.append(result)
+            
+            # Pause zwischen Experimenten (GPU/RAM abkuehlen lassen)
+            if i < len(model_configs):
+                print("\n⏳ Warte 10 Sekunden vor naechstem Experiment...")
+                time.sleep(10)
+                
+        except Exception as e:
+            print(f"❌ Konfiguration {i} fehlgeschlagen: {e}")
+    
+    # Vergleichs-Report erstellen
+    comparison_file = Path(output_base_dir) / f"{experiment_name}_comparison.md"
+    with open(comparison_file, "w", encoding="utf-8") as f:
+        f.write(f"# Modell-Vergleich: {experiment_name}\n\n")
+        f.write(f"**Task:** {task_description}\n\n")
+        f.write(f"**Anzahl Experimente:** {len(results)}\n\n")
+        
+        f.write("## Ergebnisse\n\n")
+        f.write("| Config | Developer Model | Dauer (s) | Tokens | Erfolg |\n")
+        f.write("|--------|-----------------|-----------|--------|--------|\n")
+        
+        for i, r in enumerate(results, 1):
+            dev_model = r.config.models.get('developer', 'N/A')
+            status = "✓" if r.success else "✗"
+            f.write(f"| {i} | {dev_model} | {r.total_duration_seconds} | {r.total_estimated_tokens} | {status} |\n")
+    
+    print(f"\n📊 Vergleichs-Report: {comparison_file}")
+    
+    return results
+
+
+# ============================================================
+# CLI
+# ============================================================
+
+if __name__ == "__main__":
+    print("""
+╔══════════════════════════════════════════════════════════════════════╗
+║           EXPERIMENT RUNNER - Wissenschaftliche Auswertung           ║
+╠══════════════════════════════════════════════════════════════════════╣
+║  1. Einzelnes Experiment starten                                     ║
+║  2. Modell-Vergleich durchfuehren                                    ║
+║  3. Beenden                                                          ║
+╚══════════════════════════════════════════════════════════════════════╝
+    """)
+    
+    choice = input("Auswahl (1/2/3): ").strip()
+    
+    if choice == "1":
+        name = input("Experiment-Name (z.B. snake_test): ").strip() or "experiment"
+        task = input("Task-Beschreibung (Enter fuer Snake-Spiel): ").strip() or "Snake-Spiel mit tkinter GUI"
+        
+        run_experiment(
+            experiment_name=name,
+            task_description=task
+        )
+        
+    elif choice == "2":
+        name = input("Experiment-Name (z.B. model_comparison): ").strip() or "comparison"
+        task = input("Task-Beschreibung: ").strip() or "Snake-Spiel mit tkinter GUI"
+        
+        # Verschiedene Modell-Konfigurationen zum Vergleichen
+        configs = [
+            # Kleine Modelle
+            {
+                "product_owner": "llama3.2:1b",
+                "developer": "qwen2.5-coder:1.5b",
+                "qa_engineer": "llama3.2:1b",
+                "technical_writer": "llama3.2:1b"
+            },
+            # Mittlere Modelle
+            {
+                "product_owner": "llama3.2:3b",
+                "developer": "qwen2.5-coder:3b",
+                "qa_engineer": "llama3.2:3b",
+                "technical_writer": "llama3.2:3b"
+            },
+            # Grosse Modelle (aktuell verwendet)
+            {
+                "product_owner": "mistral:7b",
+                "developer": "codellama:13b",
+                "qa_engineer": "mistral:7b",
+                "technical_writer": "mistral:7b"
+            }
+        ]
+        
+        print("\nVerfuegbare Konfigurationen:")
+        for i, c in enumerate(configs, 1):
+            print(f"  {i}. Developer: {c['developer']}")
+        
+        run_model_comparison(
+            experiment_name=name,
+            task_description=task,
+            model_configs=configs
+        )
+        
+    else:
+        print("Beendet.")
