@@ -323,17 +323,23 @@ REGELN:
         
         tester = Agent(
             role="Test Engineer",
-            goal="Schreibe unittest-Tests die den Code gruendlich pruefen",
+            goal="Schreibe praezise unittest-Tests die NUR die vorhandenen Methoden testen",
             backstory="""Du bist ein erfahrener Test-Ingenieur.
-REGELN:
-1. Schreibe unittest.TestCase Klassen
-2. Teste ALLE Methoden der Klasse
-3. Teste Randfaelle (0, negative Werte, etc.)
-4. Mindestens 5 Test-Methoden
-5. Beginne mit: class TestPokemon(unittest.TestCase):""",
+
+KRITISCHE REGELN:
+1. Teste NUR Methoden die im Code TATSAECHLICH existieren
+2. ERFINDE KEINE neuen Methoden oder Attribute
+3. Schreibe NUR Python-Code, keine Erklaerungen
+4. Benutze KEINE externen Imports ausser unittest
+5. Die Klassen sind DIREKT im selben Modul - KEIN from X import Y noetig
+6. Beginne direkt mit: class Test...(unittest.TestCase):""",
             llm=tester_llm,
             verbose=True
         )
+        
+        # Analysiere welche Klassen und Methoden im Code sind
+        class_names = re.findall(r'class\s+(\w+)', current_code)
+        method_names = re.findall(r'def\s+(\w+)', current_code)
         
         test_task = Task(
             description=f"""Schreibe unittest-Tests fuer diesen Code:
@@ -342,15 +348,18 @@ REGELN:
 {current_code}
 ```
 
-Erstelle eine TestCase-Klasse mit mindestens 5 Tests:
-- test_init: Prueft ob Attribute korrekt gesetzt werden
-- test_take_damage: Prueft Schaden-Berechnung
-- test_heal: Prueft Heilung (nicht ueber max_hp)
-- test_is_fainted: Prueft ob fainted-Check funktioniert
-- test_level_up: Prueft Level-Up Mechanik
+WICHTIG - Diese Klassen existieren: {', '.join(class_names)}
+WICHTIG - Diese Methoden existieren: {', '.join(method_names)}
 
-Beginne mit: class TestPokemon(unittest.TestCase):""",
-            expected_output="unittest.TestCase Klasse mit Tests",
+REGELN:
+1. Teste NUR die oben genannten Methoden - KEINE anderen!
+2. Die Klassen sind im selben Modul - schreibe KEINEN Import
+3. Schreibe NUR Python-Code
+4. Erstelle Instanzen der Klassen in setUp()
+5. Jede test_* Methode testet genau EINE Funktion
+
+Beginne direkt mit: class Test{class_names[0] if class_names else 'Code'}(unittest.TestCase):""",
+            expected_output="unittest.TestCase Klasse mit Tests fuer die vorhandenen Methoden",
             agent=tester
         )
         
