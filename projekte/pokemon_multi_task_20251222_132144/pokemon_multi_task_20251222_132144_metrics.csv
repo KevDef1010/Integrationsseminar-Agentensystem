@@ -1,0 +1,5 @@
+agent_role,model,task_name,start_time,end_time,duration_seconds,input_chars,output_chars,estimated_input_tokens,estimated_output_tokens,success,error_message
+Developer-Datenmodelle,codellama:13b,task_1_data_models,1766406104.1732752,1766406124.7281268,20.55,3026,2893,756,723,True,
+Developer-Kampfsystem,codellama:13b,task_2_battle_system,1766406124.832419,1766406138.2663448,13.43,2846,2537,711,634,True,
+Developer-Spielwelt,codellama:13b,task_3_game_world,1766406138.3697155,1766406156.2919707,17.92,3739,3701,934,925,True,
+Developer-Hauptspiel,codellama:13b,task_4_main_game,1766406156.3964717,1766406176.4209664,20.02,4277,4201,1069,1050,True,

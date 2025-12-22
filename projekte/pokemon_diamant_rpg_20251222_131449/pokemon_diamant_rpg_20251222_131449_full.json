@@ -1,0 +1,87 @@
+{
+  "config": {
+    "experiment_id": "pokemon_diamant_rpg_20251222_131449",
+    "experiment_name": "pokemon_diamant_rpg",
+    "task_description": "\nPOKEMON DIAMANT-INSPIRIERTES RPG-SPIEL\n======================================\n\nErstelle ein vollstaendiges Pokemon-RPG mit tkinter, das folgende Features hat:\n\n=== STARTBILDSCHIRM ===\n- Titelbildschirm mit \"Pokemon Abenteuer\" Logo (ASCII-Art oder Text)\n- \"Neues Spiel\" Button\n- Professor beguesst den Spieler und fragt nach seinem Namen\n- Auswahl aus 3 Starter-Pokemon:\n  * Chelast (Pflanze) - HP: 55, Attacken: Tackle, Rankenhieb, Rasierblatt, Synthese\n  * Panflam (Feuer) - HP: 52, Attacken: Kratzer, Glut, Flammenwurf, Ruckzuckhieb  \n  * Plinfa (Wasser) - HP: 53, Attacken: Pfund, Blubber, Aquawelle, Schnabel\n\n=== SPIELWELT (Bewegung) ===\n- 400x400 Pixel Canvas mit Gras-Tiles (gruene Rechtecke) und Wegen (braun)\n- Spieler als rotes Quadrat (oder einfache Figur)\n- Steuerung mit WASD oder Pfeiltasten\n- Mindestens 3 verschiedene Bereiche:\n  * Startstadt (sicherer Bereich, keine Kaempfe)\n  * Route 1 (Gras mit wilden Pokemon)\n  * Route 2 (staerkere wilde Pokemon)\n- Wenn Spieler auf Gras laeuft: 20% Chance auf wildes Pokemon\n\n=== WILDE POKEMON ===\n- Mindestens 6 verschiedene wilde Pokemon mit unterschiedlichen Leveln:\n  * Staralili (Normal/Flug) - Level 2-4\n  * Sheinux (Elektro) - Level 3-5\n  * Bidiza (Normal) - Level 2-3\n  * Zirpurze (Kaefer) - Level 2-4\n  * Knospi (Pflanze) - Level 4-6\n  * Ponita (Feuer) - Level 5-7\n- Jedes Pokemon hat 4 Attacken\n\n=== KAMPFSYSTEM (Rundenbasiert) ===\n- Wechsel zu Kampfbildschirm bei Begegnung\n- Anzeige beider Pokemon mit:\n  * Namen und Level\n  * HP-Balken (gruen/gelb/rot je nach HP)\n  * Aktueller HP-Wert\n- 4 Buttons fuer Attacken des eigenen Pokemons\n- \"Flucht\" Button (50% Erfolgschance)\n- \"Pokemon wechseln\" Button (wenn mehrere Pokemon)\n- Schadensberechnung: Basis-Schaden * Random(0.85-1.0) * Typeneffektivitaet\n- Typeneffektivitaet:\n  * Feuer > Pflanze > Wasser > Feuer\n  * Normal ist neutral gegen alles\n\n=== POKEMON FANGEN ===\n- \"Pokeball werfen\" Button im Kampf\n- Fangchance basiert auf HP des Gegners: (1 - gegner_hp/max_hp) * 0.5\n- Bei Erfolg: Pokemon wird zum Team hinzugefuegt (max 6 Pokemon)\n- Pokeball-Inventar: Starte mit 10 Pokeballs\n\n=== TEAM UND LEVELING ===\n- Team-Anzeige (Taste T druecken) zeigt alle eigenen Pokemon\n- XP-System: Besiegte Pokemon geben XP = gegner_level * 10\n- Level-Up bei XP >= level * 50\n- Bei Level-Up: +5 Max-HP, +2 Angriffsstaerke\n\n=== NPC TRAINER ===\n- Mindestens 2 NPC-Trainer auf der Map (blaue Quadrate)\n- Trainer haben 2-3 Pokemon\n- Kampf startet bei Beruehrung\n- Trainer geben Geld bei Sieg: trainer_pokemon_count * 100\n\n=== HUD UND MENUES ===\n- Oben: Spielername, Geld, Pokeball-Anzahl\n- ESC-Menue mit: Team anzeigen, Speichern (in JSON), Beenden\n- Gewinn-Bildschirm nach Besiegen aller Trainer\n\n=== TECHNISCHE ANFORDERUNGEN ===\n- ALLES in einer einzigen Python-Datei\n- NUR tkinter und random (plus json fuer Speichern)\n- Mindestens 400 Zeilen Code\n- Saubere Klassenstruktur:\n  * class Pokemon: name, typ, level, hp, max_hp, attacks, xp\n  * class Attack: name, typ, damage\n  * class Player: name, team, position, money, pokeballs\n  * class GameWorld: canvas, tiles, npcs, wild_pokemon_zones\n  * class Battle: player_pokemon, enemy_pokemon, is_trainer_battle\n  * class Game: Hauptklasse die alles verbindet\n- if __name__ == \"__main__\": am Ende\n",
+    "models": {
+      "product_owner": "mistral:7b",
+      "developer": "codellama:13b",
+      "qa_engineer": "mistral:7b",
+      "technical_writer": "mistral:7b"
+    },
+    "timestamp": "2025-12-22T13:14:49.947713"
+  },
+  "agent_metrics": [
+    {
+      "agent_role": "Product Owner",
+      "model": "mistral:7b",
+      "task_name": "define_requirements",
+      "start_time": 1766405689.9582176,
+      "end_time": 1766405746.1789472,
+      "duration_seconds": 56.22,
+      "input_chars": 3246,
+      "output_chars": 1910,
+      "estimated_input_tokens": 811,
+      "estimated_output_tokens": 477,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Python Developer",
+      "model": "codellama:13b",
+      "task_name": "implement_code",
+      "start_time": 1766405703.9878817,
+      "end_time": 1766405746.3802652,
+      "duration_seconds": 42.39,
+      "input_chars": 3246,
+      "output_chars": 5009,
+      "estimated_input_tokens": 811,
+      "estimated_output_tokens": 1252,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "QA Engineer",
+      "model": "mistral:7b",
+      "task_name": "review_code",
+      "start_time": 1766405718.0175455,
+      "end_time": 1766405746.5827768,
+      "duration_seconds": 28.57,
+      "input_chars": 3246,
+      "output_chars": 1980,
+      "estimated_input_tokens": 811,
+      "estimated_output_tokens": 495,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Technical Writer",
+      "model": "mistral:7b",
+      "task_name": "write_documentation",
+      "start_time": 1766405732.0472093,
+      "end_time": 1766405746.7856617,
+      "duration_seconds": 14.74,
+      "input_chars": 3246,
+      "output_chars": 4133,
+      "estimated_input_tokens": 811,
+      "estimated_output_tokens": 1033,
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "total_duration_seconds": 56.12,
+  "total_estimated_tokens": 3257,
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "python_version": "3.12.12",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 32,
+    "ram_total_gb": 31.85,
+    "ram_available_gb": 15.77,
+    "hostname": "Kevin",
+    "timestamp": "2025-12-22T13:15:46.887403"
+  },
+  "success": true,
+  "error_message": null
+}

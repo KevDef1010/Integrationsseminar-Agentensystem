@@ -1,0 +1,86 @@
+{
+  "config": {
+    "experiment_id": "battle_system_20251222_133545",
+    "experiment_name": "battle_system",
+    "task_description": "\nErstelle ein einfaches Kampfsystem mit diesen Klassen:\n\nclass Attack:\n    - name (str), damage (int), typ (str)\n    \nclass Pokemon:\n    - name, typ, level, hp, max_hp, attacks (Liste von Attack)\n    - take_damage(amount) -> int\n    - is_fainted() -> bool\n    \nclass Battle:\n    - pokemon1, pokemon2\n    - current_turn (0 oder 1)\n    - execute_attack(attacker_index, attack_index) -> str: Fuehrt Attacke aus, gibt Log zurueck\n    - get_winner() -> Pokemon oder None: Gibt Gewinner zurueck wenn einer besiegt\n    - switch_turn(): Wechselt current_turn\n\nSchreibe alle 3 Klassen vollstaendig.\nBeginne mit: class Attack:\n",
+    "models": {
+      "developer": "codellama:13b",
+      "tester": "mistral:7b",
+      "reviewer": "mistral:7b"
+    },
+    "timestamp": "2025-12-22T13:35:45.101821"
+  },
+  "agent_metrics": [
+    {
+      "agent_role": "Developer",
+      "model": "codellama:13b",
+      "task_name": "initial_code",
+      "start_time": 1766406945.1070147,
+      "end_time": 1766406958.602374,
+      "duration_seconds": 13.5,
+      "input_chars": 617,
+      "output_chars": 2072,
+      "estimated_input_tokens": 154,
+      "estimated_output_tokens": 518,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Tester",
+      "model": "mistral:7b",
+      "task_name": "write_tests",
+      "start_time": 1766406958.7038546,
+      "end_time": 1766406966.5544512,
+      "duration_seconds": 7.85,
+      "input_chars": 15,
+      "output_chars": 2144,
+      "estimated_input_tokens": 3,
+      "estimated_output_tokens": 536,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Developer-Fix",
+      "model": "codellama:13b",
+      "task_name": "iteration_1",
+      "start_time": 1766406966.722713,
+      "end_time": 1766406976.444265,
+      "duration_seconds": 9.72,
+      "input_chars": 0,
+      "output_chars": 2072,
+      "estimated_input_tokens": 0,
+      "estimated_output_tokens": 518,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Developer-Fix",
+      "model": "codellama:13b",
+      "task_name": "iteration_2",
+      "start_time": 1766406976.611554,
+      "end_time": 1766406985.6516073,
+      "duration_seconds": 9.04,
+      "input_chars": 0,
+      "output_chars": 1540,
+      "estimated_input_tokens": 0,
+      "estimated_output_tokens": 385,
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "total_duration_seconds": 40.68,
+  "total_estimated_tokens": 1957,
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "python_version": "3.12.12",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 32,
+    "ram_total_gb": 31.85,
+    "ram_available_gb": 16.12,
+    "hostname": "Kevin",
+    "timestamp": "2025-12-22T13:36:25.791400"
+  },
+  "success": false,
+  "error_message": null
+}

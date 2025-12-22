@@ -1,0 +1,9 @@
+phase,agent,task,cpu_percent,ram_percent,ram_used_gb
+task_start,Developer-Datenmodelle,task_1_data_models,1.9,46.1,14.68
+task_end,Developer-Datenmodelle,task_1_data_models,3.3,47.7,15.21
+task_start,Developer-Kampfsystem,task_2_battle_system,11.3,47.7,15.21
+task_end,Developer-Kampfsystem,task_2_battle_system,1.2,47.9,15.26
+task_start,Developer-Spielwelt,task_3_game_world,6.3,47.9,15.26
+task_end,Developer-Spielwelt,task_3_game_world,3.6,47.9,15.25
+task_start,Developer-Hauptspiel,task_4_main_game,0.0,47.9,15.26
+task_end,Developer-Hauptspiel,task_4_main_game,9.6,48.1,15.32

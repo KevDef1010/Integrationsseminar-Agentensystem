@@ -1,0 +1,3 @@
+agent_role,model,task_name,start_time,end_time,duration_seconds,input_chars,output_chars,estimated_input_tokens,estimated_output_tokens,success,error_message
+Developer,codellama:13b,initial_code,1766406674.2733862,1766406685.4066906,11.13,583,681,145,170,True,
+Tester,mistral:7b,write_tests,1766406685.5096602,1766406693.2096956,7.7,15,1349,3,337,True,

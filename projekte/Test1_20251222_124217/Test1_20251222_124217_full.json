@@ -1,0 +1,87 @@
+{
+  "config": {
+    "experiment_id": "Test1_20251222_124217",
+    "experiment_name": "Test1",
+    "task_description": "Testdaten",
+    "models": {
+      "product_owner": "mistral:7b",
+      "developer": "codellama:13b",
+      "qa_engineer": "mistral:7b",
+      "technical_writer": "mistral:7b"
+    },
+    "timestamp": "2025-12-22T12:42:17.106474"
+  },
+  "agent_metrics": [
+    {
+      "agent_role": "Product Owner",
+      "model": "mistral:7b",
+      "task_name": "define_requirements",
+      "start_time": 1766403737.1184766,
+      "end_time": 1766403787.3082466,
+      "duration_seconds": 50.19,
+      "input_chars": 9,
+      "output_chars": 3400,
+      "estimated_input_tokens": 2,
+      "estimated_output_tokens": 850,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Python Developer",
+      "model": "codellama:13b",
+      "task_name": "implement_code",
+      "start_time": 1766403749.6406085,
+      "end_time": 1766403787.5102725,
+      "duration_seconds": 37.87,
+      "input_chars": 9,
+      "output_chars": 2643,
+      "estimated_input_tokens": 2,
+      "estimated_output_tokens": 660,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "QA Engineer",
+      "model": "mistral:7b",
+      "task_name": "review_code",
+      "start_time": 1766403762.1627405,
+      "end_time": 1766403787.7122943,
+      "duration_seconds": 25.55,
+      "input_chars": 9,
+      "output_chars": 3064,
+      "estimated_input_tokens": 2,
+      "estimated_output_tokens": 766,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Technical Writer",
+      "model": "mistral:7b",
+      "task_name": "write_documentation",
+      "start_time": 1766403774.6848724,
+      "end_time": 1766403787.9148328,
+      "duration_seconds": 13.23,
+      "input_chars": 9,
+      "output_chars": 3465,
+      "estimated_input_tokens": 2,
+      "estimated_output_tokens": 866,
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "total_duration_seconds": 50.09,
+  "total_estimated_tokens": 3142,
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "python_version": "3.12.12",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 32,
+    "ram_total_gb": 31.85,
+    "ram_available_gb": 16.15,
+    "hostname": "Kevin",
+    "timestamp": "2025-12-22T12:43:08.016344"
+  },
+  "success": true,
+  "error_message": null
+}

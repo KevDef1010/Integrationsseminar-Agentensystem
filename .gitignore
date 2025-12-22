@@ -26,8 +26,8 @@ Thumbs.db
 # CrewAI Output (alter Ordner)
 output/
 
-# Projekte Ordner (generierte Dateien)
-projekte/
+# Grosse JSON Dateien (optional ignorieren)
+# projekte/*_full.json
 
 # Logs
 *.log

@@ -1,0 +1,5 @@
+phase,agent,task,cpu_percent,ram_percent,ram_used_gb
+task_start,Developer,initial_code,4.7,47.0,14.97
+task_end,Developer,initial_code,5.1,48.6,15.47
+task_start,Tester,write_tests,4.7,48.6,15.47
+task_end,Tester,write_tests,4.3,49.8,15.88

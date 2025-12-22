@@ -1,0 +1,85 @@
+{
+  "config": {
+    "experiment_id": "pokemon_multi_task_20251222_132144",
+    "experiment_name": "pokemon_multi_task",
+    "task_description": "Pokemon RPG mit Multi-Task Architektur",
+    "models": {
+      "developer": "codellama:13b",
+      "integrator": "mistral:7b"
+    },
+    "timestamp": "2025-12-22T13:21:44.164985"
+  },
+  "agent_metrics": [
+    {
+      "agent_role": "Developer-Datenmodelle",
+      "model": "codellama:13b",
+      "task_name": "task_1_data_models",
+      "start_time": 1766406104.1732752,
+      "end_time": 1766406124.7281268,
+      "duration_seconds": 20.55,
+      "input_chars": 3026,
+      "output_chars": 2893,
+      "estimated_input_tokens": 756,
+      "estimated_output_tokens": 723,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Developer-Kampfsystem",
+      "model": "codellama:13b",
+      "task_name": "task_2_battle_system",
+      "start_time": 1766406124.832419,
+      "end_time": 1766406138.2663448,
+      "duration_seconds": 13.43,
+      "input_chars": 2846,
+      "output_chars": 2537,
+      "estimated_input_tokens": 711,
+      "estimated_output_tokens": 634,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Developer-Spielwelt",
+      "model": "codellama:13b",
+      "task_name": "task_3_game_world",
+      "start_time": 1766406138.3697155,
+      "end_time": 1766406156.2919707,
+      "duration_seconds": 17.92,
+      "input_chars": 3739,
+      "output_chars": 3701,
+      "estimated_input_tokens": 934,
+      "estimated_output_tokens": 925,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Developer-Hauptspiel",
+      "model": "codellama:13b",
+      "task_name": "task_4_main_game",
+      "start_time": 1766406156.3964717,
+      "end_time": 1766406176.4209664,
+      "duration_seconds": 20.02,
+      "input_chars": 4277,
+      "output_chars": 4201,
+      "estimated_input_tokens": 1069,
+      "estimated_output_tokens": 1050,
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "total_duration_seconds": 72.35,
+  "total_estimated_tokens": 3332,
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "python_version": "3.12.12",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 32,
+    "ram_total_gb": 31.85,
+    "ram_available_gb": 16.54,
+    "hostname": "Kevin",
+    "timestamp": "2025-12-22T13:22:56.523297"
+  },
+  "success": true,
+  "error_message": null
+}
