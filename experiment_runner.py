@@ -405,16 +405,24 @@ def run_experiment(
         
         developer = Agent(
             role="Python Developer",
-            goal="Sauberen, funktionalen Python-Code schreiben der die Anforderungen erfuellt",
-            backstory="Du bist ein erfahrener Python-Entwickler der best practices befolgt.",
+            goal="VOLLSTAENDIGEN, AUSFUEHRBAREN Python-Code schreiben. Immer kompletten Code ausgeben, nie Platzhalter oder '...' verwenden!",
+            backstory="""Du bist ein erfahrener Python-Entwickler. 
+            WICHTIG: Du schreibst IMMER vollstaendigen, ausfuehrbaren Code!
+            - Keine Platzhalter wie '...' oder 'TODO'
+            - Keine Erklaerungen, NUR Code
+            - Code muss mit 'python datei.py' direkt startbar sein
+            - Immer 'if __name__ == "__main__":' am Ende
+            - Nur Standardbibliotheken (tkinter, random) verwenden""",
             llm=developer_llm,
             verbose=True
         )
         
         qa_engineer = Agent(
             role="QA Engineer",
-            goal="Code gruendlich auf Fehler pruefen",
-            backstory="Du bist ein erfahrener QA-Ingenieur mit scharfem Auge fuer Bugs.",
+            goal="Code gruendlich auf Fehler pruefen und konkrete Fixes vorschlagen",
+            backstory="""Du bist ein erfahrener QA-Ingenieur mit scharfem Auge fuer Bugs.
+            Pruefe auf: Syntaxfehler, fehlende Imports, Logikfehler, fehlende Funktionen.
+            Gib konkrete Code-Fixes an, nicht nur Beschreibungen.""",
             llm=qa_llm,
             verbose=True
         )
@@ -431,21 +439,46 @@ def run_experiment(
         task_desc = config.task_description
         
         define_requirements = Task(
-            description=f"Erstelle eine detaillierte Spezifikation fuer: {task_desc}",
-            expected_output="Vollstaendige Anforderungsspezifikation",
+            description=f"""Erstelle eine KURZE, PRAEZISE Spezifikation fuer: {task_desc}
+            
+            Beschreibe NUR:
+            1. Welche Klassen gebraucht werden (Name, Attribute, Methoden)
+            2. Welche GUI-Elemente (Buttons, Labels, Canvas)
+            3. Spielablauf in 5-10 Stichpunkten
+            
+            KEINE Code-Beispiele, nur Anforderungen!""",
+            expected_output="Kurze Spezifikation mit Klassen und GUI-Elementen",
             agent=product_owner
         )
         
         implement_code = Task(
-            description=f"Implementiere basierend auf den Anforderungen vollstaendigen Python-Code fuer: {task_desc}",
-            expected_output="Vollstaendiger, ausfuehrbarer Python-Code",
+            description=f"""Schreibe VOLLSTAENDIGEN, AUSFUEHRBAREN Python-Code fuer: {task_desc}
+            
+            WICHTIGE REGELN:
+            1. NUR Python-Code ausgeben, keine Erklaerungen davor oder danach
+            2. Code muss mit 'python datei.py' DIREKT starten
+            3. Verwende NUR tkinter und random (sind bei Python dabei)
+            4. IMMER 'if __name__ == "__main__":' am Ende
+            5. KEINE Platzhalter wie '...' oder 'pass' oder 'TODO'
+            6. JEDE Funktion muss vollstaendig implementiert sein
+            7. Mindestens 100 Zeilen Code
+            
+            Beginne direkt mit: import tkinter as tk""",
+            expected_output="Vollstaendiger Python-Code der sofort ausfuehrbar ist",
             agent=developer,
             context=[define_requirements]
         )
         
         review_code = Task(
-            description="Pruefe den Code auf Fehler und Qualitaet",
-            expected_output="QA-Report mit Abnahme-Entscheidung",
+            description="""Pruefe den Code auf diese Fehler:
+            1. Fehlende Imports?
+            2. Syntaxfehler?
+            3. Funktionen die aufgerufen aber nicht definiert sind?
+            4. Variablen die nicht existieren?
+            5. Ist 'if __name__ == "__main__":' vorhanden?
+            
+            Gib fuer JEDEN Fehler den korrigierten Code-Ausschnitt an.""",
+            expected_output="QA-Report mit konkreten Code-Fixes",
             agent=qa_engineer,
             context=[define_requirements, implement_code]
         )

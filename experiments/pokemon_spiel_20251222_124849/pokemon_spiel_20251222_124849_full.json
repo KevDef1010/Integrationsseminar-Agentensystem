@@ -1,0 +1,87 @@
+{
+  "config": {
+    "experiment_id": "pokemon_spiel_20251222_124849",
+    "experiment_name": "pokemon_spiel",
+    "task_description": "Ein einfaches Pokemon-Kampfspiel mit tkinter GUI. 3 waehlbare Pokemon (Pikachu, Glumanda, Schiggy), rundenbasierte Kaempfe gegen Computer, HP-Anzeige, 4 Attacken pro Pokemon, Gewinn-Verlust Anzeige, Neustart-Button",
+    "models": {
+      "product_owner": "mistral:7b",
+      "developer": "codellama:13b",
+      "qa_engineer": "mistral:7b",
+      "technical_writer": "mistral:7b"
+    },
+    "timestamp": "2025-12-22T12:48:49.783140"
+  },
+  "agent_metrics": [
+    {
+      "agent_role": "Product Owner",
+      "model": "mistral:7b",
+      "task_name": "define_requirements",
+      "start_time": 1766404129.797148,
+      "end_time": 1766404181.189366,
+      "duration_seconds": 51.39,
+      "input_chars": 214,
+      "output_chars": 2221,
+      "estimated_input_tokens": 53,
+      "estimated_output_tokens": 555,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Python Developer",
+      "model": "codellama:13b",
+      "task_name": "implement_code",
+      "start_time": 1766404142.6197977,
+      "end_time": 1766404181.392065,
+      "duration_seconds": 38.77,
+      "input_chars": 214,
+      "output_chars": 3024,
+      "estimated_input_tokens": 53,
+      "estimated_output_tokens": 756,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "QA Engineer",
+      "model": "mistral:7b",
+      "task_name": "review_code",
+      "start_time": 1766404155.4424472,
+      "end_time": 1766404181.5946376,
+      "duration_seconds": 26.15,
+      "input_chars": 214,
+      "output_chars": 4200,
+      "estimated_input_tokens": 53,
+      "estimated_output_tokens": 1050,
+      "success": true,
+      "error_message": null
+    },
+    {
+      "agent_role": "Technical Writer",
+      "model": "mistral:7b",
+      "task_name": "write_documentation",
+      "start_time": 1766404168.2650967,
+      "end_time": 1766404181.7970524,
+      "duration_seconds": 13.53,
+      "input_chars": 214,
+      "output_chars": 4047,
+      "estimated_input_tokens": 53,
+      "estimated_output_tokens": 1011,
+      "success": true,
+      "error_message": null
+    }
+  ],
+  "total_duration_seconds": 51.29,
+  "total_estimated_tokens": 3372,
+  "system_info": {
+    "platform": "Windows",
+    "platform_version": "10.0.26100",
+    "python_version": "3.12.12",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+    "cpu_count": 32,
+    "ram_total_gb": 31.85,
+    "ram_available_gb": 16.44,
+    "hostname": "Kevin",
+    "timestamp": "2025-12-22T12:49:41.899156"
+  },
+  "success": true,
+  "error_message": null
+}
